@@ -2,12 +2,18 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db
 import pandas as pd
+import json
 
-# Load Firebase credentials
-cred = credentials.Certificate("firebase_credentials.json")
-firebase_admin.initialize_app(cred, {"databaseURL": "https://e-nose-array-default-rtdb.europe-west1.firebasedatabase.app/"})
+# ✅ Check if Firebase is already initialized to avoid reinitialization errors
+if not firebase_admin._apps:
+    # ✅ Load Firebase credentials from Streamlit Secrets
+    firebase_config = json.loads(st.secrets["FIREBASE_CREDENTIALS"].replace("\n", "\\n"))
 
-# Fetch data from Firebase
+    # ✅ Initialize Firebase with secret credentials
+    cred = credentials.Certificate(firebase_config)
+    firebase_admin.initialize_app(cred, {"databaseURL": "https://e-nose-array-default-rtdb.europe-west1.firebasedatabase.app/"})
+
+# ✅ Fetch data from Firebase
 def get_firebase_data():
     ref = db.reference("/sensor_data")  # Path to your sensor data
     data = ref.get()
@@ -18,7 +24,7 @@ def get_firebase_data():
     else:
         return pd.DataFrame()  # Return empty if no data
 
-# Streamlit Dashboard
+# ✅ Streamlit Dashboard
 st.title("📊 E-Nose Sensor Data Dashboard")
 st.write("🔹 **Live sensor data from Firebase**")
 
